@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>How does Jude feel?</title>
+	<style type="text/css">
+		#how {
+			font-family: "Arial";
+			font-weight: bold;
+			font-size: 6em;
+			text-align: center;
+		}
+		#when {
+			margin-top: 40px;
+			font-family: "Arial";
+			font-weight: bold;
+			font-size: 2em;
+			text-align: center;
+		}
+		
+		#stats {
+			padding-left: 5px;
+			font-family: "Arial";
+			color: #666;
+			display: none;
+			font-size: 1.15em;
+			margin-top: 40px;
+		}
+		
+		#content {
+			width: 800px;
+			margin: 0 auto;
+		}
+	</style>
+</head>
+<body>
+<div id="content">
+	<div id="when">It's <span id="time-now">getting late</span>, and Jude is:</div>
+	<div id="how">HUNGRY</div>
+	<div id="stats">
+	<strong>last meal:</strong> <span id="last-meal"></span><br>
+	<strong>next meal:</strong> <span id="next-meal"></span><br>
+	</div>
+</div>
+<script type="text/javascript">
+	
+	var meals = [
+		{time: 7, description: "breakfast"},
+		{time: 10, description: "second breakfast"},
+		{time: 13, description: "lunch"},
+		{time: 16, description: "afternoon tea"},
+		{time: 19, description: "dinner"},
+		{time: 23, description: "bedtime snack"}
+	];
+	
+	var lastUpdate;
+	var now;
+	
+	
+	function update() {
+		now = new Date();
+		if (lastUpdate == now.getSeconds()) {
+			return;
+		}
+		lastUpdate = now.getSeconds();
+		
+		var nextMeal = meals[0];
+		var lastMeal = meals[meals.length - 1];
+		for (var i=0; i<meals.length; i++) {
+			if (meals[i].time > now.getHours()) {
+				nextMeal = meals[i];
+				if (i > 0) {
+					lastMeal = meals[i - 1];
+				}
+				break;
+			}
+		}
+		
+		document.getElementById("stats").style.display = "block";
+		
+		
+		var nextMealText = nextMeal.description + " at " + timeTo(nextMeal.time) + " nom nom";
+		setHtml("next-meal", nextMealText);
+		
+		var lastMealText = lastMeal.description + " at " + timeFrom(lastMeal.time);
+		setHtml("last-meal", lastMealText);
+		
+		var hoursSinceLast = now.getHours() - lastMeal.time;
+		if (hoursSinceLast < 0) {
+			hoursSinceLast += 24;
+		}
+		var hoursToNext = nextMeal.time - now.getHours();
+		if (hoursSinceLast < 0) {
+			hoursSinceLast += 24;
+		}
+		if (hoursSinceLast == 0) {
+			setHtml("how", "GETTING HUNGRY");
+		} else if (hoursToNext == 1) {
+			setHtml("how", "SUPER HUNGRY");
+		} else {
+			setHtml("how", "HUNGRY");
+		}
+		
+		var hour = now.getHours();
+		var part = "am";
+		if (hour > 12) {
+			hour -= 12;
+			part = "pm";
+		}
+		var timeNow = hour + "." + (now.getMinutes() < 10 ? "0" : "") + now.getMinutes() + part;
+		setHtml("time-now", timeNow);
+	}
+	
+	function timeTo(hour) {
+		var result = (hour > 12 ? (hour - 12) + "pm" : hour + "am") + ", which is in ";
+		if (hour < now.getHours()) {
+			hour += 24;
+		}
+		var hours = 0 - (now.getHours() - hour + 1);
+		if (hours > 0) {
+			result += hours + (hours == 1 ? " hour, " : " hours, ");
+		}
+		var minutes = 59 - now.getMinutes();
+		if (minutes > 0 || hours > 0) {
+			result += minutes + (minutes == 1 ? " minute and " : " minutes and ");
+		}
+		var seconds = 59 - now.getSeconds();
+		result += seconds + (seconds == 1 ? " seconds" : " seconds");
+		return result;
+	}
+	
+	function timeFrom(hour) {
+		var result = (hour > 12 ? (hour - 12) + "pm" : hour + "am") + ", which was a whole ";
+		if (hour > now.getHours()) {
+			hour -= 24;
+		}
+		var hours = now.getHours() - hour;
+		if (hours > 0) {
+			result += hours + (hours == 1 ? " hour, " : " hours, ");
+		}
+		var minutes = now.getMinutes();
+		if (minutes > 0 || hours > 0) {
+			result += minutes + (minutes == 1 ? " minute and " : " minutes and ");
+		}
+		var seconds = now.getSeconds();
+		result += seconds + (seconds == 1 ? " seconds" : " seconds");
+		result += " ago";
+		return result;
+	}
+	
+	function setHtml(id, content) {
+		document.getElementById(id).innerHTML = content;
+	}
+	
+	onload = update;
+	setInterval(update, 50);
+	update();
+</script>
+</body>
+</html>
